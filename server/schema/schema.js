@@ -15,16 +15,16 @@ const {
 
 //dummy data
 var players = [
-  {id: '1', name: 'Phil Ivey', winnings: 123456, played: [1, 2, 3]},
-  {id: '2', name: 'Daniel Negreanu', winnings: 123000, played: [1]},
-  {id: '3', name: 'Tom Dwan', winnings: 1234564, played: [1, 3]},
-  {id: '4', name: 'Dominik Panka', winnings: 123456123456, played: [2]}
+  {id: 1, name: 'Phil Ivey', winnings: 123456, played: [1, 2, 3]},
+  {id: 2, name: 'Daniel Negreanu', winnings: 123000, played: [1]},
+  {id: 3, name: 'Tom Dwan', winnings: 1234564, played: [1, 3]},
+  {id: 4, name: 'Dominik Panka', winnings: 1234561, played: [2]}
 ];
 
 var games = [
-  {id: '1', name: '20k High Roller', prizeMoney: 44000, winnerId: '2'},
-  {id: '2', name: '1mil Cashgame', prizeMoney: 64000, winnerId: '4'},
-  {id: '3', name: '2020 WSOP', prizeMoney: 21000, winnerId: '1'}
+  {id: 1, name: '20k High Roller', prizeMoney: 44000, winner: 'Daniel Negreanu'},
+  {id: 2, name: '1mil Cashgame', prizeMoney: 64000, winner: 'Dominik Panka'},
+  {id: 3, name: '2020 WSOP', prizeMoney: 21000, winner: 'Phil Ivey'}
 ];
 
 //Define types
@@ -37,9 +37,11 @@ const PlayerType = new GraphQLObjectType({
     played: {
       type: new GraphQLList(GameType),
       resolve(parent, args) {
+        let gamesPlayed = [];
         _.forEach(parent.played, value => {
-          return _.filter(games, {id: value});
+          gamesPlayed.push(_.find(games, {id: value}));
         });
+        return gamesPlayed;
       }
     }
   })
@@ -54,7 +56,7 @@ const GameType = new GraphQLObjectType({
     winner: {
       type: PlayerType,
       resolve(parent, args) {
-        return _.find(players, {id: parent.winnerId})
+        return _.find(players, {name: parent.winner})
       }
     }
   })
@@ -119,13 +121,13 @@ const Mutation = new GraphQLObjectType({
       args: {
         name: {type: GraphQLString},
         prizeMoney: {type: GraphQLInt},
-        winnerId: {type: PlayerType}
+        winner: {type: GraphQLString}//PlayerType}
       },
       resolve(parent, args) {
         let game = new Game({
           name: args.name,
           prizeMoney: args.prizeMoney,
-          winnerId: args.winnerId
+          winner: args.winner.name
         });
         return game.save();
       }

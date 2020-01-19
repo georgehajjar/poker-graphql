@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const gameSchema = new Schema({
   name: String,
   prizeMoney: Number,
-  winnerId: Number
+  winnerId: String
 });
 
 module.exports = mongoose.model('Game', gameSchema);
