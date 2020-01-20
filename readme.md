@@ -24,10 +24,6 @@ use poker
 db.players.find().pretty()
 db.games.find().pretty()
 ```
-id: {type: GraphQLID},
-name: {type: GraphQLString},
-winnings: {type: GraphQLInt},
-played
 
 ### Types
 ```
@@ -35,14 +31,14 @@ Player{
   id: ID
   name: String
   winnings: Int
-  played: [ID]
+  gamesPlayed: [Game]
+  gamesWon: [Game]
 }
 
 Game{
   id: ID
   name: String
   prizeMoney: Int
-  winner: Player
 }
 ```
 
@@ -64,14 +60,15 @@ gameByName(name: String): Game
 ### Mutations
 ```
 addPlayer(
-name: String
-winnings: Int
-played: [ID]
+name: String,
+winnings: Int,
+gamesPlayed: [ID],
+gamesWon: [ID]
 ): Player
 
 addGame(
-name: String
+gameId: ID,
+name: String,
 prizeMoney: Int
-winner: String
 ): Game
 ```
