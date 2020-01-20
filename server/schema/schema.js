@@ -12,20 +12,6 @@ const {
   GraphQLNonNull
 } = graphql;
 
-//dummy data
-var players = [
-  {id: 1, name: 'Phil Ivey', winnings: 123456, gamesPlayed: [1, 2, 3], gamesWon: [3]},
-  {id: 2, name: 'Daniel Negreanu', winnings: 123000, gamesPlayed: [1], gamesWon: [1]},
-  {id: 3, name: 'Tom Dwan', winnings: 1234564, gamesPlayed: [1, 3], gamesWon: []},
-  {id: 4, name: 'Dominik Panka', winnings: 1234561, gamesPlayed: [2], gamesWon: [2]}
-];
-
-var games = [
-  {gameId: 1, name: '20k High Roller', prizeMoney: 44000},
-  {gameId: 2, name: '1mil Cashgame', prizeMoney: 64000},
-  {gameId: 3, name: '2020 WSOP', prizeMoney: 21000}
-];
-
 //Define types
 
 /*
@@ -46,7 +32,7 @@ const PlayerType = new GraphQLObjectType({
       resolve(parent, args) {
         let gamesPlayed = [];
         parent.gamesPlayed.forEach(value => {
-          gamesPlayed.push(Game.find({gameId: value}));
+          gamesPlayed.push(Game.findOne({gameId: value}));
         });
         return gamesPlayed;
       }
@@ -56,7 +42,7 @@ const PlayerType = new GraphQLObjectType({
       resolve(parent, args) {
         let gamesWon = [];
         parent.gamesWon.forEach(value => {
-          gamesWon.push(Game.find({gameId: value}));
+          gamesWon.push(Game.findOne({gameId: value}));
         });
         return gamesWon;
       }
@@ -141,8 +127,8 @@ const Mutation = new GraphQLObjectType({
       args: {
         name: {type: new GraphQLNonNull(GraphQLString)},
         winnings: {type: new GraphQLNonNull(GraphQLInt)},
-        gamesPlayed: {type: new GraphQLNonNull(new GraphQLList(GraphQLID))},
-        gamesWon: {type: new GraphQLNonNull(new GraphQLList(GraphQLID))}
+        gamesPlayed: {type: new GraphQLList(GraphQLID)},
+        gamesWon: {type: new GraphQLList(GraphQLID)}
       },
       resolve(parent, args) {
         let player = new Player({

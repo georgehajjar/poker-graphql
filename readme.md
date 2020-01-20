@@ -72,3 +72,46 @@ name: String,
 prizeMoney: Int
 ): Game
 ```
+
+### Suggested Sample Mutations
+```
+mutation{
+  addGame(gameId: "1", name: "20k High Roller", prizeMoney: 20000) {
+		id
+    name
+    prizeMoney
+  }
+}
+
+mutation {
+	addGame(gameId: "2", name: "1mil Cashgame", prizeMoney: 1000000) {
+    id
+    name
+    prizeMoney
+  }
+}
+
+mutation{
+  addGame(gameId: "3", name: "WSOP", prizeMoney: 2500000) {
+    id
+    name
+    prizeMoney
+  }
+}
+
+mutation {
+  addPlayer(name: "Phil Ivey", winnings: 123456, gamesPlayed: ["1", "2", "3"], gamesWon: ["3"]) {
+    id
+    name
+    winnings
+    gamesPlayed{
+    	name
+    	prizeMoney
+    }
+    gamesWon{
+      name
+      prizeMoney
+    }
+  }
+}
+```
