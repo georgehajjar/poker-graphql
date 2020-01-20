@@ -1,5 +1,4 @@
 const graphql = require('graphql');
-const _ = require('lodash');
 const Player = require('../models/player');
 const Game = require('../models/game');
 
@@ -10,7 +9,8 @@ const {
   GraphQLID,
   GraphQLInt,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
+  GraphQLInputObjectType
 } = graphql;
 
 //dummy data
@@ -28,6 +28,13 @@ var games = [
 ];
 
 //Define types
+
+/*
+PlayerType
+name: Player name
+winnings: Total career $ winnings
+played: Tournaments participated
+*/
 const PlayerType = new GraphQLObjectType({
   name: 'Player',
   fields: () => ({
@@ -38,8 +45,8 @@ const PlayerType = new GraphQLObjectType({
       type: new GraphQLList(GameType),
       resolve(parent, args) {
         let gamesPlayed = [];
-        _.forEach(parent.played, value => {
-          gamesPlayed.push(_.find(games, {id: value}));
+        parent.played.forEach(value => {
+          gamesPlayed.push(Game.findById(value));
         });
         return gamesPlayed;
       }
@@ -47,6 +54,23 @@ const PlayerType = new GraphQLObjectType({
   })
 });
 
+// PlayerTypeInput used for addGame mutation
+const PlayerTypeInput = new GraphQLInputObjectType({
+  name: 'PlayerInput',
+  fields: () => ({
+    //id: {type: GraphQLID},
+    name: {type: GraphQLString}
+    //winnings: {type: GraphQLInt},
+    //played: {type: new GraphQLList(GraphQLID)}
+  })
+});
+
+/*
+GameType
+name: Game name
+prizeMoney: Cash prize for winner
+winner: Name of winner
+*/
 const GameType = new GraphQLObjectType({
   name: 'Game',
   fields: () => ({
@@ -56,7 +80,7 @@ const GameType = new GraphQLObjectType({
     winner: {
       type: PlayerType,
       resolve(parent, args) {
-        return _.find(players, {name: parent.winner})
+        return Player.find({name: parent.winner});
       }
     }
   })
@@ -66,32 +90,50 @@ const GameType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    player: {
-      type: PlayerType,
-      args: {id: {type: GraphQLID}},
-      resolve(parent, args) {
-        //Get data from db
-        return _.find(players, {id: args.id});
-      }
-    },
-    game: {
-      type: GameType,
-      args: {id: {type: GraphQLID}},
-      resolve(parent, args) {
-        //Get data from db
-        return _.find(games, {id: args.id});
-      }
-    },
+    //Query all players
     players: {
       type: new GraphQLList(PlayerType),
       resolve(parent, args) {
-        return players;
+        return Player.find({});
       }
     },
+    //Query player by ID
+    playerById: {
+      type: PlayerType,
+      args: {id: {type: GraphQLID}},
+      resolve(parent, args) {
+        return Player.findById(args.id);
+      }
+    },
+    //Query player by name
+    playerByName: {
+      type: PlayerType,
+      args: {name: {type: GraphQLString}},
+      resolve(parent, args){
+        return Player.findOne({name: args.name});
+      }
+    },
+    //Query all games
     games: {
       type: new GraphQLList(GameType),
       resolve(parent, args) {
-        return games;
+        return Game.find({});
+      }
+    },
+    //Query games by ID
+    gameById: {
+      type: GameType,
+      args: {id: {type: GraphQLID}},
+      resolve(parent, args) {
+        return Game.findById(args.id);
+      }
+    },
+    //Query game by name
+    gameByName: {
+      type: GameType,
+      args: {name: {type: GraphQLString}},
+      resolve(parent, args){
+        return Game.findOne({name: args.name});
       }
     }
   }
@@ -100,12 +142,13 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
+    //Add player with name (String), winnings (Int) and games played ([Int])
     addPlayer: {
       type: PlayerType,
       args: {
-        name: {type: GraphQLString},
-        winnings: {type: GraphQLInt},
-        played: {type: GraphQLInt}
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        winnings: {type: new GraphQLNonNull(GraphQLInt)},
+        played: {type: new GraphQLNonNull(new GraphQLList(GraphQLID))}
       },
       resolve(parent, args) {
         let player = new Player({
@@ -116,18 +159,20 @@ const Mutation = new GraphQLObjectType({
         return player.save();
       }
     },
+    //Add game with id (ID), name (String), prize money (Int) and winner (String)
     addGame: {
       type: GameType,
       args: {
-        name: {type: GraphQLString},
-        prizeMoney: {type: GraphQLInt},
-        winner: {type: GraphQLString}//PlayerType}
+        id: {type: new GraphQLNonNull(GraphQLID)},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        prizeMoney: {type: new GraphQLNonNull(GraphQLInt)},
+        winner: {type: new GraphQLNonNull(PlayerTypeInput)}
       },
       resolve(parent, args) {
         let game = new Game({
           name: args.name,
           prizeMoney: args.prizeMoney,
-          winner: args.winner.name
+          winner: args.winner
         });
         return game.save();
       }
