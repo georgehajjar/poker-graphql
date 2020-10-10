@@ -77,14 +77,14 @@ prizeMoney: Int
 ```
 mutation{
   addGame(gameId: "1", name: "20k High Roller", prizeMoney: 20000) {
-		id
+    id
     name
     prizeMoney
   }
 }
 
 mutation {
-	addGame(gameId: "2", name: "1mil Cashgame", prizeMoney: 1000000) {
+  addGame(gameId: "2", name: "1mil Cashgame", prizeMoney: 1000000) {
     id
     name
     prizeMoney
